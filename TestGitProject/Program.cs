@@ -69,31 +69,23 @@ namespace TestGitProject
         }
 
         public List<String> GetAllUniqueNames()
-        {// внимательно проверить
-            List<String> result = new List<string>();
-            result = (from us in users where result.Contains(us.Name) select us.Name).ToList();
-            return result;
+        {
+            return (from us in users select us.Name).Distinct().ToList();
         }
 
         public List<User> GetAllAuthors()
         {
-
-            //Напишите реализацию
-
+            return (from rec in records select rec.Author).Distinct().ToList();
         }
 
         public Dictionary<int, User> GetUsersDictionary()
         {
-
-            //Напишите реализацию
-
+            
         }
 
         public int GetMaxID()
         {
-
-            //Напишите реализацию
-
+            return (from us in users select us.ID).Max();
         }
 
         public List<User> GetOrderedUsers()
