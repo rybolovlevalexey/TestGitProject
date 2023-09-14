@@ -60,21 +60,19 @@ namespace TestGitProject
 
         public User GetUserByID(int id)
         {
-            return (from us in users where us.ID == id select us).ToArray()[0];
+            return (from us in users where us.ID == id select us).Single();
         }
 
         public List<User> GetUsersBySubstring(String substring)
         {
-
-            //Напишите реализацию
-
+            return (from us in users where us.Name.Contains(substring) || us.Surname.Contains(substring) select us).ToList();
         }
 
         public List<String> GetAllUniqueNames()
-        {
-
-            //Напишите реализацию
-
+        {// внимательно проверить
+            List<String> result = new List<string>();
+            result = (from us in users where result.Contains(us.Name) select us.Name).ToList();
+            return result;
         }
 
         public List<User> GetAllAuthors()
