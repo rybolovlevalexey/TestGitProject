@@ -11,66 +11,119 @@ using System.Xml.XPath;
 
 namespace TestGitProject
 {
-    class Letter
-    {
-        Letter()
-        {
-            Id = Convert.ToInt32(DateTime.Now.TimeOfDay.TotalSeconds.ToString().Split(",")[0]);
-            IsNew = true;
-            Size = 10;
-        }
-        public Letter(bool is_new)
-        {
-            Id = Convert.ToInt32(DateTime.Now.TimeOfDay.TotalSeconds.ToString().Split(",")[0]);
-            IsNew = is_new;
-        }
-        public override string ToString()
-        {
-            string result_st = "Letter ";
-            result_st += Id.ToString();
-            result_st += " ";
-            result_st += IsNew.ToString();
-            return result_st;
-        }
-        public bool IsNew { get; set; }
-        public int Size { get; set; }
-        public int Id { get; }
-    }
     class Program
     {
-
         static void Main(string[] args)
         {
-            var test_letters = new Letter[5];
-            test_letters[0] = new Letter(true);
-            test_letters[1] = new Letter(false);
-            test_letters[2] = new Letter(true);
-            test_letters[3] = new Letter(true);
-            test_letters[4] = new Letter(false);
-            var result1 = GetNewLetterIds_ClassicWay(test_letters);
-            var result2 = GetNewLetterIds_LinqWay(test_letters).ToArray();
-            if (result1.Count() != result2.Count())
-            {
-                Console.WriteLine("Error");
-            } else
-            {
-                for (int i = 0; i < result1.Count(); i += 1)
-                    Console.WriteLine(result1[i] + " " + result2[i]);
-            }
+
         }
-        static public List<int> GetNewLetterIds_ClassicWay(Letter[] letters)
+
+    }
+
+    class User
+    {
+        public int ID { get; set; }
+        public String Name { get; set; }
+        public String Surname { get; set; }
+        public User(int id, String name, String surname)
         {
-            var res = new List<int>();
-            for (int i = 0; i < letters.Length; i++)
-            {
-                if (letters[i].IsNew)
-                    res.Add(letters[i].Id);
-            }
-            return res;
+            this.ID = id; this.Name = name; this.Surname = surname;
         }
-        static public  IEnumerable<int> GetNewLetterIds_LinqWay(Letter[] letters)
+        public override string ToString() { return string.Format("ID={0}: {1} {2}", ID, Name, Surname); }
+    }
+
+    class Record
+    {
+        public User Author { get; set; }
+        public String Message { get; set; }
+        public Record(User author, String message)
         {
-            return letters.Where(letter => letter.IsNew).Select(letter => letter.Id);
+            this.Author = author; this.Message = message;
+        }
+    }
+
+    class BusinessLogic
+    {
+        private List<User> users = new List<User>();
+        private List<Record> records = new List<Record>();
+        public BusinessLogic()
+        {
+            // наполнение обеих коллекций тестовыми данными
+        }
+
+        public List<User> GetUsersBySurname(String surname)
+        {
+            List<User> result = new List<User>();
+            result = (from us in users where us.Surname == surname select us).ToList();
+            return result;
+        }
+
+        public User GetUserByID(int id)
+        {
+            return (from us in users where us.ID == id select us).ToArray()[0];
+        }
+
+        public List<User> GetUsersBySubstring(String substring)
+        {
+
+            //Напишите реализацию
+
+        }
+
+        public List<String> GetAllUniqueNames()
+        {
+
+            //Напишите реализацию
+
+        }
+
+        public List<User> GetAllAuthors()
+        {
+
+            //Напишите реализацию
+
+        }
+
+        public Dictionary<int, User> GetUsersDictionary()
+        {
+
+            //Напишите реализацию
+
+        }
+
+        public int GetMaxID()
+        {
+
+            //Напишите реализацию
+
+        }
+
+        public List<User> GetOrderedUsers()
+        {
+
+            //Напишите реализацию
+
+        }
+
+        public List<User> GetDescendingOrderedUsers()
+        {
+
+            //Напишите реализацию
+
+        }
+
+        public List<User> GetReversedUsers()
+        {
+
+            //Напишите реализацию
+
+        }
+
+        public List<User> GetUsersPage(int pageSize, int pageIndex)
+        {
+
+            //Напишите реализацию
+
         }
     }
 }
