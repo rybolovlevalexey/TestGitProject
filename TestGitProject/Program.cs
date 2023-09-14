@@ -90,16 +90,12 @@ namespace TestGitProject
 
         public List<User> GetOrderedUsers()
         {
-
-            //Напишите реализацию
-
+            return (from us in users orderby us.ID select us).ToList();
         }
 
         public List<User> GetDescendingOrderedUsers()
         {
-
-            //Напишите реализацию
-
+            return (from us in users orderby us.ID descending select us).ToList();
         }
 
         public List<User> GetReversedUsers()
