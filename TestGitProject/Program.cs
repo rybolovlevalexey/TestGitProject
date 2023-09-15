@@ -80,7 +80,7 @@ namespace TestGitProject
 
         public Dictionary<int, User> GetUsersDictionary()
         {
-            
+            return users.ToDictionary(us1 => us1.ID, us2 => us2);
         }
 
         public int GetMaxID()
@@ -100,16 +100,15 @@ namespace TestGitProject
 
         public List<User> GetReversedUsers()
         {
-
-            //Напишите реализацию
-
+            return (from us in users select us).Reverse().ToList();
         }
 
         public List<User> GetUsersPage(int pageSize, int pageIndex)
         {
-
-            //Напишите реализацию
-
+            List<User> result = new List<User>();
+            result = users.Take(pageSize + pageIndex).ToList();
+            result = users.Skip(pageIndex).ToList();
+            return result;
         }
     }
 }
