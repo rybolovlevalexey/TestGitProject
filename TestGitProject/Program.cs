@@ -54,11 +54,13 @@ namespace TestGitProject
                 }
             }
 
-            make_tags();
+            make_tags(id_name);
         }
 
-        static void make_tags()
+        static void make_tags(Dictionary<string, List<string>> films_id_name)
         {
+            Dictionary<string, List<string>> result = new Dictionary<string, List<string>>(); // film name: [all tags]
+
             string dataset_path = @"C:\Универ\ml-latest\";
             string[] links_IMDB_MovieLens = File.ReadAllLines(dataset_path + "links_IMDB_MovieLens.csv")[1..];
             string[] TagCodes_MovieLens = File.ReadAllLines(dataset_path + "TagCodes_MovieLens.csv")[1..];
@@ -93,7 +95,28 @@ namespace TestGitProject
                 for (int i = 0; i < (7 - movie_id.Length); i += 1)
                     zeros += "0";
                 movie_id = "tt" + zeros + movie_id;
-
+                if (films_id_name.ContainsKey(movie_id))
+                {
+                    foreach (var movie_name in films_id_name[movie_id])
+                    {
+                        if (!result.ContainsKey(movie_name))
+                        {
+                            result[movie_name] = new List<string>();
+                        }
+                        if (tag_dict.ContainsKey(tag_id))
+                            result[movie_name].Add(tag_dict[tag_id]);
+                    }
+                }
+            }
+            int cnt = 0;
+            foreach (var key in result.Keys)
+            {
+                foreach (var value in result[key])
+                    Console.Write(value);
+                Console.WriteLine();
+                if (cnt == 10)
+                    break;
+                cnt += 1;
             }
         }
     }
