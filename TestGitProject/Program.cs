@@ -54,12 +54,18 @@ namespace TestGitProject
                 }
             }
 
-            string[] links_IMDB_MovieLens = File.ReadAllLines(dataset_path + "links_IMDB_MovieLens.csv")[1..]; 
-            string[] TagCodes_MovieLens = File.ReadAllLines(dataset_path + "TagCodes_MovieLens.csv")[1..]; 
+            make_tags();
+        }
+
+        static void make_tags()
+        {
+            string dataset_path = @"C:\Универ\ml-latest\";
+            string[] links_IMDB_MovieLens = File.ReadAllLines(dataset_path + "links_IMDB_MovieLens.csv")[1..];
+            string[] TagCodes_MovieLens = File.ReadAllLines(dataset_path + "TagCodes_MovieLens.csv")[1..];
             string[] TagScores_MovieLens = File.ReadAllLines(dataset_path + "TagScores_MovieLens.csv")[1..];
             Dictionary<string, int> relev_dict = new Dictionary<string, int>();
             Dictionary<string, string> tag_dict = new Dictionary<string, string>(); // tag_id: tag
-            
+
             foreach (var line in TagScores_MovieLens)
             {
                 string[] elements = line.Split(",");
@@ -71,7 +77,7 @@ namespace TestGitProject
                     relevants = Convert.ToInt32(rel[2] + "0");
                 relev_dict[tagid] = relevants;
             }
-            foreach(var line in TagCodes_MovieLens)
+            foreach (var line in TagCodes_MovieLens)
             {
                 string[] elements = line.Split(",");
                 string tag_id = elements[0].Trim(), tag = elements[1].Trim();
@@ -87,7 +93,7 @@ namespace TestGitProject
                 for (int i = 0; i < (7 - movie_id.Length); i += 1)
                     zeros += "0";
                 movie_id = "tt" + zeros + movie_id;
-                Console.WriteLine(movie_id);
+
             }
         }
     }
