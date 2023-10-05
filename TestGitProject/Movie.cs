@@ -9,10 +9,10 @@ namespace TestGitProject
         public string name;
         public string rating;
         public string id;
+        public HashSet<string> tags = new HashSet<string>();
 
         private HashSet<string> actors = new HashSet<string>();
         private string director;
-        private HashSet<string> tags = new HashSet<string>();
 
         public Movie(string name, string id, HashSet<string> actors=null, string director=null, HashSet<string> tags=null, string rating=null) {
             this.name = name;
@@ -27,7 +27,8 @@ namespace TestGitProject
         {
             this.actors.Add(name_actor);
         }
-        public void add_tags(string tag_name) { this.tags.Add(tag_name); }
+        public HashSet<string> give_actors() { return this.actors; }
         public void change_director(string director_name) { this.director = director_name; }
+        public string give_director() { return this.director; }
     }
 }

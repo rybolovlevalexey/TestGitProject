@@ -20,8 +20,8 @@ namespace TestGitProject
             Dictionary<string, List<string>> id_name = new Dictionary<string, List<string>>();
 
             Dictionary<string, Movie> films = new Dictionary<string, Movie>();  // название: фильм
-            Dictionary<string, Movie> people = new Dictionary<string, Movie>();  // имя учатсника: фильм
-            Dictionary<string, Movie> tags_dict = new Dictionary<string, Movie>();  // тэг: фильм
+            Dictionary<string, List<Movie>> people = new Dictionary<string, List<Movie>>();  // имя учатсника: фильмы
+            Dictionary<string, List<Movie>> tags_dict = new Dictionary<string, List<Movie>>();  // тэг: фильмы
             string dataset_path = @"C:\Универ\ml-latest\";
 
             string[] MovieCodes_IMDB = File.ReadAllLines(dataset_path + "MovieCodes_IMDB.tsv")[1..];
@@ -42,6 +42,7 @@ namespace TestGitProject
                     id_name[film_id].Add(title);
                 }
             }
+            // добавление рейтинга во все фильмы
             string[] Ratings_IMDB = File.ReadAllLines(dataset_path + "Ratings_IMDB.tsv")[1..];
             foreach(var line in Ratings_IMDB)
             {
@@ -54,10 +55,36 @@ namespace TestGitProject
                 }
             }
 
-            make_tags(id_name);
+            Dictionary<string, List<string>> result_tags = make_tags(id_name);
+            foreach (var film_name in result_tags.Keys)
+            {
+                films[film_name].tags = result_tags[film_name].ToHashSet<string>();
+            }
+            
+            // наполнение второго словаря
+            //  ...
+
+            // наполнение третьего словаря, когда все классы фильмов заполнены
+            foreach (var film_name in result_tags.Keys)
+            {
+                foreach (var tag in result_tags[film_name])
+                {
+                    if (!tags_dict.ContainsKey(tag))
+                        tags_dict[tag] = new List<Movie>();
+                    tags_dict[tag].Add(films[film_name]);
+                }
+            }
+
+            // testing...
+            //foreach (var key in films.Keys)
+            //{
+            //    var value = films[key];
+            //    string name = value.name, rat = value.rating, id = value.id, director = value.give_director();
+            //    Console.WriteLine($"{name} - {rat} - {id} - {director}");
+            //}
         }
 
-        static void make_tags(Dictionary<string, List<string>> films_id_name)
+        static Dictionary<string, List<string>> make_tags(Dictionary<string, List<string>> films_id_name)
         {
             Dictionary<string, List<string>> result = new Dictionary<string, List<string>>(); // film name: [all tags]
 
@@ -118,6 +145,7 @@ namespace TestGitProject
                     break;
                 cnt += 1;
             }
+            return result;
         }
     }
 }
