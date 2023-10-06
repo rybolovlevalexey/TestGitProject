@@ -147,5 +147,15 @@ namespace TestGitProject
             }
             return result;
         }
+
+        static void make_people(Dictionary<string, List<string>> films_id_name)
+        {
+            Dictionary<string, List<string>> result = new Dictionary<string, List<string>>();  // имя человека: список фильмов
+            string dataset_path = @"C:\Универ\ml-latest\";
+            string[] ActorsDirectorsNames_IMDB = File.ReadAllLines(dataset_path + "ActorsDirectorsNames_IMDB.txt")[1..];
+            string[] ActorsDirectorsCodes_IMDB = File.ReadAllLines(dataset_path + "ActorsDirectorsCodes_IMDB.tsv")[1..];
+            Dictionary<string, >
+
+        }
     }
 }
