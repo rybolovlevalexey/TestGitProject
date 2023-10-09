@@ -22,17 +22,23 @@ namespace TestGitProject
         {
             IEnumerable<Type> derivedTypes = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(t => typeof(Imitations).IsAssignableFrom(t) && t != typeof(Imitations));
-
+            // создание списка всех имитаций
             List<Imitations> imitations = new List<Imitations>();
             foreach (Type derivedType in derivedTypes)
-            {
                 imitations.Add((Imitations)Activator.CreateInstance(derivedType));
-            }
-            foreach (var elem in imitations)
-            {
-                elem.making_imitation();
-            }
-            //Task show_splash = new Task(() => );
+            // создание класса в котором содержатся список с токенами и текущий id
+            var data = new DataClass(imitations.Count);
+            
+            // создание необходимых тасок
+            Task show_splash = new Task(() => imitations[data.current_id].making_imitation(ref data), data.tokens[0]);
+            Task req_license = show_splash.ContinueWith(arg => imitations[data.current_id].making_imitation(ref data), TaskContinuationOptions.OnlyOnRanToCompletion);
+            Task setup_menus = req_license.ContinueWith(arg => imitations[data.current_id].making_imitation(ref data), TaskContinuationOptions.OnlyOnRanToCompletion);
+            Task check_update = show_splash.ContinueWith(arg => imitations[data.current_id].making_imitation(ref data), TaskContinuationOptions.OnlyOnRanToCompletion);
+            Task download_update = check_update.ContinueWith(arg => imitations[data.current_id].making_imitation(ref data), TaskContinuationOptions.OnlyOnRanToCompletion);
+            Task display_welcome = Task.WhenAll(setup_menus, download_update).ContinueWith(arg => imitations[data.current_id].making_imitation(ref data), TaskContinuationOptions.OnlyOnRanToCompletion);
+            Task hide_splash = display_welcome.ContinueWith(arg => imitations[data.current_id].making_imitation(ref data), TaskContinuationOptions.OnlyOnRanToCompletion);
+            
+
         }
 
 
