@@ -10,12 +10,34 @@ using System.Xml;
 using System.Xml.XPath;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Reflection;
 
 namespace TestGitProject
 {
     class Program
     {
         static void Main(string[] args)
+        {
+            IEnumerable<Type> derivedTypes = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t => typeof(Imitations).IsAssignableFrom(t) && t != typeof(Imitations));
+
+            List<Imitations> imitations = new List<Imitations>();
+            foreach (Type derivedType in derivedTypes)
+            {
+                imitations.Add((Imitations)Activator.CreateInstance(derivedType));
+            }
+            foreach (var elem in imitations)
+            {
+                elem.making_imitation();
+            }
+            //Task show_splash = new Task(() => );
+        }
+
+
+        // задание по обработке данных про фильмы
+        static void main_data_processing()
         {
             Dictionary<string, List<string>> id_name = new Dictionary<string, List<string>>();  // id фильма: название фильма
 
@@ -44,10 +66,10 @@ namespace TestGitProject
             }
             MovieCodes_IMDB = null;
             Console.WriteLine("first films done");
-            
+
             // добавление рейтинга во все фильмы
             string[] Ratings_IMDB = File.ReadAllLines(dataset_path + "Ratings_IMDB.tsv")[1..];
-            foreach(var line in Ratings_IMDB.AsParallel())
+            foreach (var line in Ratings_IMDB.AsParallel())
             {
                 string[] elements = line.Split('\t');
                 string film_id = elements[0].Trim(), rating = elements[1].Trim();
@@ -79,14 +101,14 @@ namespace TestGitProject
                 }
             }
             Console.WriteLine("make people done");
-            
+
             Dictionary<string, List<string>> result_tags = make_tags(id_name);
             foreach (var film_name in result_tags.Keys.AsParallel())
             {
                 films[film_name].tags = result_tags[film_name].ToHashSet<string>();
             }
             Console.WriteLine("make tags done");
-            
+
             // наполнение второго словаря
             foreach (var per in result_people.Values)
             {
@@ -131,15 +153,7 @@ namespace TestGitProject
                 }
                 Console.WriteLine("--------------");
             }
-            // testing...
-            //foreach (var key in films.Keys)
-            //{
-            //    var value = films[key];
-            //    string name = value.name, rat = value.rating, id = value.id, director = value.give_director();
-            //    Console.WriteLine($"{name} - {rat} - {id} - {director}");
-            //}
         }
-
         static Dictionary<string, List<string>> make_tags(Dictionary<string, List<string>> films_id_name)
         {
             Dictionary<string, List<string>> result = new Dictionary<string, List<string>>(); // film name: [all tags]
@@ -207,7 +221,6 @@ namespace TestGitProject
             }
             return last_result;
         }
-
         static Dictionary<string, Person> make_people(Dictionary<string, List<string>> films_id_name)
         {
             Console.WriteLine("start make people");
