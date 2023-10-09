@@ -17,7 +17,7 @@ namespace TestGitProject
     {
         static void Main(string[] args)
         {
-            Dictionary<string, List<string>> id_name = new Dictionary<string, List<string>>();
+            Dictionary<string, List<string>> id_name = new Dictionary<string, List<string>>();  // id фильма: название фильма
 
             Dictionary<string, Movie> films = new Dictionary<string, Movie>();  // название: фильм
             Dictionary<string, List<Movie>> people = new Dictionary<string, List<Movie>>();  // имя учатсника: фильмы
@@ -59,7 +59,11 @@ namespace TestGitProject
             Ratings_IMDB = null;
             Console.WriteLine("rating done");
 
-            make_people(id_name);
+            Dictionary<string, Person> result_people = make_people(id_name);
+            foreach (var per in result_people.Values)
+            {
+                
+            }
             Console.WriteLine("make people done");
             
             Dictionary<string, List<string>> result_tags = make_tags(id_name);
@@ -160,48 +164,63 @@ namespace TestGitProject
             return last_result;
         }
 
-        static void make_people(Dictionary<string, List<string>> films_id_name)
+        static Dictionary<string, Person> make_people(Dictionary<string, List<string>> films_id_name)
         {
             Console.WriteLine("start make people");
-            Dictionary<string, List<string>> result = new Dictionary<string, List<string>>();  // имя человека: список фильмов
+
+            //Dictionary<string, List<string>> result = new Dictionary<string, List<string>>();  // имя человека: список фильмов
             string dataset_path = @"C:\Универ\ml-latest\";
-            
-            Dictionary<string, string> persons = new Dictionary<string, string>();  // id: name
 
-            string[] ActorsDirectorsNames_IMDB = File.ReadAllLines(dataset_path + "ActorsDirectorsNames_IMDB.txt")[1..];
-            Console.WriteLine("first reading done");
-            
-            foreach (var line in ActorsDirectorsNames_IMDB.AsParallel())
-            {
-                string[] elems = line.Split("\t");
-                string id = elems[0].Trim(), name = elems[1].Trim();
-                persons[id] = name;
-            }
-            Console.WriteLine("make people 1");
-            ActorsDirectorsNames_IMDB = null;
+            Dictionary<string, Person> persons = new Dictionary<string, Person>();  // id: name
 
-            string[] ActorsDirectorsCodes_IMDB = File.ReadAllLines(dataset_path + "ActorsDirectorsCodes_IMDB.tsv")[1..];
-            Console.WriteLine("second reading done");
-            foreach (var line in ActorsDirectorsCodes_IMDB.AsParallel())
+            using (StreamReader reader = new StreamReader(dataset_path + "ActorsDirectorsNames_IMDB.txt"))
             {
-                string[] elems = line.Split("\t");
-                string mov_id = elems[0].Trim(), chel_id = elems[2].Trim();
-                foreach (string mov_name in films_id_name[mov_id])
+                reader.ReadLine();
+                while (!reader.EndOfStream)
                 {
-                    if (!result.ContainsKey(persons[chel_id]))
-                        result[persons[chel_id]] = new List<string>();
-                    result[persons[chel_id]].Add(mov_name);
+                    string line = reader.ReadLine();
+                    string[] elems = line.Split("\t");
+                    string id = elems[0].Trim(), name = elems[1].Trim();
+                    persons[id] = new Person(name, id);
                 }
             }
-            ActorsDirectorsCodes_IMDB = null;
-            Console.WriteLine("make people 2");
+            Console.WriteLine("make people 1 done");
 
-            
-            foreach (var key in result.Keys)
+            using (StreamReader reader = new StreamReader(dataset_path + "ActorsDirectorsCodes_IMDB.tsv"))
             {
-                Console.WriteLine($"{key} {result[key].ToString()}");
+                reader.ReadLine();
+                while (!reader.EndOfStream)
+                {
+                    string line = reader.ReadLine();
+                    string[] elems = line.Split("\t");
+                    string mov_id = elems[0].Trim(), chel_id = elems[2].Trim(), categ = elems[3].Trim();
+                    if (categ != "director" || categ != "actor" || categ != "actress" || !persons.ContainsKey(chel_id) || 
+                        !films_id_name.ContainsKey(mov_id))
+                        continue;
+
+                    if (categ == "director")
+                    {
+                        foreach (string mov_name in films_id_name[mov_id])
+                        {
+                            persons[chel_id].director_movies_id.Add(mov_name);
+                        }
+                    } else
+                    {
+                        foreach (string mov_name in films_id_name[mov_id])
+                        {
+                            persons[chel_id].actor_movis_id.Add(mov_name);
+                        }
+                    }
+
+                    foreach (string mov_name in films_id_name[mov_id])
+                    {
+                        persons[chel_id].movies_id.Add(mov_name);
+                    }
+                }
             }
-            Console.WriteLine("make people 3");
+            Console.WriteLine("make people 2 done");
+
+            return persons;
         }
     }
 }
