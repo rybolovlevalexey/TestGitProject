@@ -62,7 +62,16 @@ namespace TestGitProject
             Dictionary<string, Person> result_people = make_people(id_name);
             foreach (var per in result_people.Values)
             {
-                
+                foreach (var movie_id in per.actor_movis_id)
+                {
+                    foreach (var movie_name in id_name[movie_id])
+                        films[movie_name].add_actor(per.name);
+                }
+                foreach (var movie_id in per.director_movies_id)
+                {
+                    foreach (var movie_name in id_name[movie_id])
+                        films[movie_name].change_director(per.name);
+                }
             }
             Console.WriteLine("make people done");
             
