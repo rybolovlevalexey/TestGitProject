@@ -83,7 +83,17 @@ namespace TestGitProject
             Console.WriteLine("make tags done");
             
             // наполнение второго словаря
-            //  ...
+            foreach (var per in result_people.Values)
+            {
+                if (!people.ContainsKey(per.name))
+                    people[per.name] = new List<Movie>();
+                foreach (var mov_id in per.movies_id)
+                {
+                    foreach (var mov_name in id_name[mov_id])
+                        people[per.name].Add(films[mov_name]);
+                }
+            }
+            Console.WriteLine("словарь с людьми наполнен");
 
             // наполнение третьего словаря, когда все классы фильмов заполнены
             foreach (var film_name in result_tags.Keys.AsParallel())
@@ -95,7 +105,25 @@ namespace TestGitProject
                     tags_dict[tag].Add(films[film_name]);
                 }
             }
+            Console.WriteLine("словарь с тэгами наполнен");
 
+            for (int i = 0; i < 25; i += 1)
+            {
+                var cur = films[films.Keys.ToArray()[i]];
+                Console.WriteLine($"{cur.name} {cur.rating} {cur.id} {cur.give_director()}");
+                if (cur.tags != null)
+                {
+                    foreach (var el in cur.tags)
+                        Console.Write($"{el} ");
+                }
+                Console.WriteLine();
+                if (cur.give_actors() != null)
+                {
+                    foreach (var el in cur.give_actors())
+                        Console.Write($"{el} ");
+                }
+                Console.WriteLine("--------------");
+            }
             // testing...
             //foreach (var key in films.Keys)
             //{
@@ -203,10 +231,11 @@ namespace TestGitProject
                     string line = reader.ReadLine();
                     string[] elems = line.Split("\t");
                     string mov_id = elems[0].Trim(), chel_id = elems[2].Trim(), categ = elems[3].Trim();
+                    
                     if (categ != "director" || categ != "actor" || categ != "actress" || !persons.ContainsKey(chel_id) || 
                         !films_id_name.ContainsKey(mov_id))
                         continue;
-
+Console.WriteLine(categ);
                     if (categ == "director")
                     {
                         foreach (string mov_name in films_id_name[mov_id])
