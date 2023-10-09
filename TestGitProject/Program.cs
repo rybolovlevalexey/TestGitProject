@@ -42,6 +42,7 @@ namespace TestGitProject
                     id_name[film_id].Add(title);
                 }
             }
+            MovieCodes_IMDB = null;
             Console.WriteLine("first films done");
             
             // добавление рейтинга во все фильмы
@@ -64,11 +65,15 @@ namespace TestGitProject
             {
                 foreach (var movie_id in per.actor_movis_id)
                 {
+                    if (!id_name.ContainsKey(movie_id))
+                        continue;
                     foreach (var movie_name in id_name[movie_id])
                         films[movie_name].add_actor(per.name);
                 }
                 foreach (var movie_id in per.director_movies_id)
                 {
+                    if (!id_name.ContainsKey(movie_id))
+                        continue;
                     foreach (var movie_name in id_name[movie_id])
                         films[movie_name].change_director(per.name);
                 }
@@ -89,6 +94,8 @@ namespace TestGitProject
                     people[per.name] = new List<Movie>();
                 foreach (var mov_id in per.movies_id)
                 {
+                    if (!id_name.ContainsKey(mov_id))
+                        continue;
                     foreach (var mov_name in id_name[mov_id])
                         people[per.name].Add(films[mov_name]);
                 }
@@ -232,10 +239,9 @@ namespace TestGitProject
                     string[] elems = line.Split("\t");
                     string mov_id = elems[0].Trim(), chel_id = elems[2].Trim(), categ = elems[3].Trim();
                     
-                    if (categ != "director" || categ != "actor" || categ != "actress" || !persons.ContainsKey(chel_id) || 
+                    if (!(categ == "director" || categ == "actor" || categ == "actress") || !persons.ContainsKey(chel_id) || 
                         !films_id_name.ContainsKey(mov_id))
                         continue;
-Console.WriteLine(categ);
                     if (categ == "director")
                     {
                         foreach (string mov_name in films_id_name[mov_id])
