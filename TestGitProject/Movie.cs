@@ -14,7 +14,7 @@ namespace TestGitProject
         private HashSet<string> actors = new HashSet<string>();
         private string director;
 
-        public Movie(string name, string id, HashSet<string> actors=null, string director=null, HashSet<string> tags=null, string rating=null) {
+        public Movie(string name, string id, HashSet<string> actors=null, string director=null, HashSet<string> tags=null, string rating="0") {
             this.name = name;
             this.actors = actors;
             this.director = director;

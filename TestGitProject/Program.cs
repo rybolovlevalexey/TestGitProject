@@ -20,31 +20,6 @@ namespace TestGitProject
     {
         static void Main(string[] args)
         {
-            IEnumerable<Type> derivedTypes = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(t => typeof(Imitations).IsAssignableFrom(t) && t != typeof(Imitations));
-            // создание списка всех имитаций
-            List<Imitations> imitations = new List<Imitations>();
-            foreach (Type derivedType in derivedTypes)
-                imitations.Add((Imitations)Activator.CreateInstance(derivedType));
-            // создание класса в котором содержатся список с токенами и текущий id
-            var data = new DataClass(imitations.Count);
-            
-            // создание необходимых тасок
-            Task show_splash = new Task(() => imitations[data.current_id].making_imitation(ref data), data.tokens[0]);
-            Task req_license = show_splash.ContinueWith(arg => imitations[data.current_id].making_imitation(ref data), TaskContinuationOptions.OnlyOnRanToCompletion);
-            Task setup_menus = req_license.ContinueWith(arg => imitations[data.current_id].making_imitation(ref data), TaskContinuationOptions.OnlyOnRanToCompletion);
-            Task check_update = show_splash.ContinueWith(arg => imitations[data.current_id].making_imitation(ref data), TaskContinuationOptions.OnlyOnRanToCompletion);
-            Task download_update = check_update.ContinueWith(arg => imitations[data.current_id].making_imitation(ref data), TaskContinuationOptions.OnlyOnRanToCompletion);
-            Task display_welcome = Task.WhenAll(setup_menus, download_update).ContinueWith(arg => imitations[data.current_id].making_imitation(ref data), TaskContinuationOptions.OnlyOnRanToCompletion);
-            Task hide_splash = display_welcome.ContinueWith(arg => imitations[data.current_id].making_imitation(ref data), TaskContinuationOptions.OnlyOnRanToCompletion);
-            
-
-        }
-
-
-        // задание по обработке данных про фильмы
-        static void main_data_processing()
-        {
             Dictionary<string, List<string>> id_name = new Dictionary<string, List<string>>();  // id фильма: название фильма
 
             Dictionary<string, Movie> films = new Dictionary<string, Movie>();  // название: фильм
@@ -159,7 +134,58 @@ namespace TestGitProject
                 }
                 Console.WriteLine("--------------");
             }
+
+            while (true)
+            {
+                Console.WriteLine("a - фильмы, b - люди, c - тэги");
+                string mode = Console.ReadLine();
+                switch (mode)
+                {
+                    case "a":
+                        string movie_name = Console.ReadLine();
+                        if (!films.ContainsKey(movie_name))
+                            Console.WriteLine("Указанный фильм не найден");
+                        else
+                        {
+                            var result = films[movie_name];
+                            Console.WriteLine($"Фильм {result.name} с рейтингом {result.rating}");
+                            if (result.tags != null)
+                                Console.WriteLine($"располагает следующими тэгами: {result.tags.ToString()}");
+                            if (result.give_actors() != null)
+                                Console.WriteLine($"и актёрами: {result.give_actors().ToString()}");
+                            if (result.give_director() != null)
+                                Console.WriteLine($"режиссёры - {result.give_director()}");
+                        }
+                        break;
+                    case "b":
+                        string person_name = Console.ReadLine();
+                        if (!people.ContainsKey(person_name))
+                        {
+                            Console.WriteLine("Указанный человек не найден");
+                        } else
+                        {
+                            Console.WriteLine($"Человек с именем {person_name} участвовал в следующих проектах:");
+                            foreach (var cur_film in people[person_name])
+                                Console.WriteLine(cur_film.name);
+                        }
+                        break;
+                    case "c":
+                        string tag_name = Console.ReadLine();
+                        if (!tags_dict.ContainsKey(tag_name))
+                        {
+                            Console.WriteLine("Указанный тэг не найден");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Тэг {tag_name} присутствует в следующих фильмах:");
+                            foreach (var cur_film in tags_dict[tag_name])
+                                Console.WriteLine(cur_film.name);
+                        }
+                        break;
+                }
+            }
         }
+
         static Dictionary<string, List<string>> make_tags(Dictionary<string, List<string>> films_id_name)
         {
             Dictionary<string, List<string>> result = new Dictionary<string, List<string>>(); // film name: [all tags]
