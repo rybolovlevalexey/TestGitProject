@@ -189,46 +189,9 @@ namespace TestGitProject
         static Dictionary<string, List<string>> make_tags(Dictionary<string, List<string>> films_id_name)
         {
             Dictionary<string, List<string>> result = new Dictionary<string, List<string>>(); // film name: [all tags]
-
+            Dictionary<string, string> MovLens_IMDB = new Dictionary<string, string>();
             string dataset_path = @"C:\Универ\ml-latest\";
-            Dictionary<string, int> relev_dict = new Dictionary<string, int>(); // film_id-tag_id
             Dictionary<string, string> tag_dict = new Dictionary<string, string>(); // tag_id: tag
-
-            using (StreamReader reader = new StreamReader(dataset_path + "TagScores_MovieLens.csv"))
-            {
-                reader.ReadLine();
-                while (!reader.EndOfStream)
-                {
-                    string line = reader.ReadLine();
-                    string[] elements = line.Split(",");
-                    string tagid = elements[1].Trim(), rel = elements[2].Trim(), film_id = elements[0].Trim(), filmid = "tt";
-                    for (int i = 0; i < (7 - film_id.Length); i += 1)
-                        filmid += "0";
-                    filmid += film_id;
-                    int relevants;
-                    if (rel.Length < 4)
-                        rel += "0";
-                    relevants = Convert.ToInt32(rel.Substring(2, 2));
-                    relev_dict[filmid + "-" + tagid] = relevants;
-                }
-                
-            }
-            Console.WriteLine("Make tags done 1/3.");
-
-            using (StreamReader reader = new StreamReader(dataset_path + "TagCodes_MovieLens.csv"))
-            {
-                reader.ReadLine();
-                while (!reader.EndOfStream)
-                {
-                    string line = reader.ReadLine();
-                    string[] elements = line.Split(",");
-                    string tag_id = elements[0].Trim(), tag = elements[1].Trim();
-                    tag_dict[tag_id] = tag;
-                }
-            }
-            Console.WriteLine("Make tags done 2/3.");
-            foreach (var elem in tags_dict.Keys.Take<string>(10))
-                Console.WriteLine(elem);
 
 
             using (StreamReader reader = new StreamReader(dataset_path + "links_IMDB_MovieLens.csv"))
@@ -236,36 +199,53 @@ namespace TestGitProject
                 reader.ReadLine();
                 while (!reader.EndOfStream)
                 {
-                    string line = reader.ReadLine();
-                    string[] elements = line.Split(",");
-                    string movie_id = elements[0].Trim(), tag_id = elements[2].Trim();
-                    string zeros = "";
-                    for (int i = 0; i < (7 - movie_id.Length); i += 1)
-                        zeros += "0";
-                    movie_id = "tt" + zeros + movie_id;
-                    if (films_id_name.ContainsKey(movie_id))
+                    string[] elements = reader.ReadLine().Split(",");
+                    MovLens_IMDB[elements[0]] = "tt" + elements[1];
+                }
+            }
+            Console.WriteLine("Make tags done 1/3.");
+
+
+            using (StreamReader reader = new StreamReader(dataset_path + "TagCodes_MovieLens.csv"))
+            {
+                reader.ReadLine();
+                while (!reader.EndOfStream)
+                {
+                    string[] elements = reader.ReadLine().Split(",");
+                    tag_dict[elements[0].Trim()] = elements[1].Trim();
+                }
+            }
+            Console.WriteLine("Make tags done 2/3.");
+
+            using (StreamReader reader = new StreamReader(dataset_path + "TagScores_MovieLens.csv"))
+            {
+                reader.ReadLine();
+                while (!reader.EndOfStream)
+                {
+                    string[] elements = reader.ReadLine().Split(",");
+                    string tagid = elements[1].Trim(), rel = elements[2].Trim(), MovLens_id = elements[0].Trim();
+                    string IMDB_id = MovLens_IMDB[MovLens_id];
+                    int relevants;
+                    if (rel.Length < 4)
+                        rel += "0";
+                    relevants = Convert.ToInt32(rel.Substring(2, 2));
+                    if (relevants > 50)
                     {
-                        foreach (var movie_name in films_id_name[movie_id])
+                        if (!films_id_name.ContainsKey(IMDB_id))
+                            continue;
+                        foreach (var film_name in films_id_name[IMDB_id])
                         {
-                            if (!result.ContainsKey(movie_name))
-                            {
-                                result[movie_name] = new List<string>();
-                            }
-                            if (tag_dict.ContainsKey(tag_id))
-                                result[movie_name].Add(tag_dict[tag_id]);
+                            if (!result.ContainsKey(film_name))
+                                result[film_name] = new List<string>();
+                            result[film_name].Add(tag_dict[tagid]);
                         }
+                        
                     }
                 }
             }
             Console.WriteLine("Make tags done 3/3.");
 
-            Dictionary<string, List<string>> last_result = new Dictionary<string, List<string>>(); // film name: [all tags]
-            foreach (var key in result.Keys.AsParallel())
-            {
-                if (result[key].Count != 0)
-                    last_result[key] = result[key];
-            }
-            return last_result;
+            return result;
         }
         static Dictionary<string, Person> make_people(Dictionary<string, List<string>> films_id_name)
         {
