@@ -11,24 +11,12 @@ namespace TestGitProject
         public string id;
         public HashSet<string> tags = new HashSet<string>();
 
-        private HashSet<string> actors = new HashSet<string>();
-        private string director;
+        public HashSet<string> actors = new HashSet<string>();
+        public HashSet<string> directors = new HashSet<string>();
 
-        public Movie(string name, string id, HashSet<string> actors=null, string director=null, HashSet<string> tags=null, string rating="0") {
+        public Movie(string name, string id) {
             this.name = name;
-            this.actors = actors;
-            this.director = director;
-            this.tags = tags;
-            this.rating = rating;
             this.id = id;
         }
-
-        public void add_actor(string name_actor)
-        {
-            this.actors.Add(name_actor);
-        }
-        public HashSet<string> give_actors() { return this.actors; }
-        public void change_director(string director_name) { this.director = director_name; }
-        public string give_director() { return this.director; }
     }
 }
