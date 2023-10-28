@@ -105,7 +105,7 @@ namespace TestGitProject
                         people[per.name].Add(films[mov_name]);
                 }
             }
-            Console.WriteLine("словарь с людьми наполнен");
+            Console.WriteLine("Dictionary with persons is ready.");
 
             // наполнение третьего словаря, когда все классы фильмов заполнены
             foreach (var film_name in result_tags.Keys.AsParallel())
@@ -117,25 +117,8 @@ namespace TestGitProject
                     tags_dict[tag].Add(films[film_name]);
                 }
             }
-            Console.WriteLine("словарь с тэгами наполнен");
+            Console.WriteLine("Dictionary with tags is ready.");
 
-            for (int i = 0; i < 25; i += 1)
-            {
-                var cur = films[films.Keys.ToArray()[i]];
-                Console.WriteLine($"{cur.name} {cur.rating} {cur.id} {cur.directors}");
-                if (cur.tags != null)
-                {
-                    foreach (var el in cur.tags)
-                        Console.Write($"{el} ");
-                }
-                Console.WriteLine();
-                if (cur.actors != null)
-                {
-                    foreach (var el in cur.actors)
-                        Console.Write($"{el} ");
-                }
-                Console.WriteLine("--------------");
-            }
 
             while (true)
             {
@@ -151,10 +134,9 @@ namespace TestGitProject
                         {
                             var result = films[movie_name];
                             Console.WriteLine($"Фильм {result.name} с рейтингом {result.rating}");
-                            if (result.tags != null)
-                                Console.WriteLine($"располагает следующими тэгами: {result.tags.ToString()}");
-                            Console.WriteLine($"и актёрами: {result.actors.ToString()}");
-                            Console.WriteLine($"режиссёры - {result.directors}");
+                            Console.WriteLine($"располагает следующими тэгами: {print_iter(result.tags)}");
+                            Console.WriteLine($"и актёрами: {print_iter(result.actors)}");
+                            Console.WriteLine($"режиссёры - {print_iter(result.directors)}");
                         }
                         break;
                     case "b":
@@ -164,9 +146,14 @@ namespace TestGitProject
                             Console.WriteLine("Указанный человек не найден");
                         } else
                         {
+                            int num = 1;
                             Console.WriteLine($"Человек с именем {person_name} участвовал в следующих проектах:");
                             foreach (var cur_film in people[person_name])
-                                Console.WriteLine(cur_film.name);
+                            {
+                                Console.Write($"{num}) {cur_film.name}  ");
+                                num += 1;
+                            }
+                            Console.WriteLine();
                         }
                         break;
                     case "c":
@@ -178,16 +165,33 @@ namespace TestGitProject
                         else
                         {
                             Console.WriteLine($"Тэг {tag_name} присутствует в следующих фильмах:");
+                            int num = 1;
                             foreach (var cur_film in tags_dict[tag_name])
-                                Console.WriteLine(cur_film.name);
+                            {
+                                Console.Write($"{num}) " + cur_film.name + "  ");
+                                num += 1;
+                            }
+                            Console.WriteLine();
                         }
                         break;
                 }
             }
         }
 
+        static string print_iter(IEnumerable<string> iterable)
+        {
+            int i = 0;
+            string st = "";
+            foreach (var elem in iterable)
+            {
+                st += $"{i + 1}) {elem}  ";
+                i += 1;
+            }
+            return st;
+        }
         static Dictionary<string, List<string>> make_tags(Dictionary<string, List<string>> films_id_name)
         {
+            Console.WriteLine("Start make tags.");
             Dictionary<string, List<string>> result = new Dictionary<string, List<string>>(); // film name: [all tags]
             Dictionary<string, string> MovLens_IMDB = new Dictionary<string, string>();
             string dataset_path = @"C:\Универ\ml-latest\";
@@ -249,59 +253,51 @@ namespace TestGitProject
         }
         static Dictionary<string, Person> make_people(Dictionary<string, List<string>> films_id_name)
         {
-            Console.WriteLine("start make people");
-
-            //Dictionary<string, List<string>> result = new Dictionary<string, List<string>>();  // имя человека: список фильмов
+            Console.WriteLine("Start make people.");
             string dataset_path = @"C:\Универ\ml-latest\";
-
-            Dictionary<string, Person> persons = new Dictionary<string, Person>();  // id: name
+            Dictionary<string, Person> persons = new Dictionary<string, Person>();  // id: Person
 
             using (StreamReader reader = new StreamReader(dataset_path + "ActorsDirectorsNames_IMDB.txt"))
             {
                 reader.ReadLine();
                 while (!reader.EndOfStream)
                 {
-                    string line = reader.ReadLine();
-                    string[] elems = line.Split("\t");
-                    string id = elems[0].Trim(), name = elems[1].Trim();
-                    persons[id] = new Person(name, id);
+                    string[] elems = reader.ReadLine().Split("\t");
+                    string per_id = elems[0].Trim(), per_name = elems[1].Trim();
+                    string[] professions = elems[4].Trim().Split(","), target_profs = new string[3] { "director", "actor", "actress" };
+                    bool flag = false;
+                    foreach(var prof in professions)
+                    {
+                        if (target_profs.Contains(prof))
+                            flag = true;
+                    }
+                    if (flag)
+                        persons[per_id] = new Person(per_name, per_id);
                 }
             }
-            Console.WriteLine("make people 1 done");
+            Console.WriteLine("Make people 1/2 done.");
+
 
             using (StreamReader reader = new StreamReader(dataset_path + "ActorsDirectorsCodes_IMDB.tsv"))
             {
                 reader.ReadLine();
                 while (!reader.EndOfStream)
                 {
-                    string line = reader.ReadLine();
-                    string[] elems = line.Split("\t");
+                    string[] elems = reader.ReadLine().Split("\t");
                     string mov_id = elems[0].Trim(), chel_id = elems[2].Trim(), categ = elems[3].Trim();
-                    
-                    if (!(categ == "director" || categ == "actor" || categ == "actress") || !persons.ContainsKey(chel_id) || 
-                        !films_id_name.ContainsKey(mov_id))
+                    if (!persons.ContainsKey(chel_id) || !films_id_name.ContainsKey(mov_id))
                         continue;
                     if (categ == "director")
                     {
-                        foreach (string mov_name in films_id_name[mov_id])
-                        {
-                            persons[chel_id].director_movies_id.Add(mov_name);
-                        }
+                        persons[chel_id].director_movies_id.Add(mov_id);
                     } else
                     {
-                        foreach (string mov_name in films_id_name[mov_id])
-                        {
-                            persons[chel_id].actor_movis_id.Add(mov_name);
-                        }
+                        persons[chel_id].actor_movis_id.Add(mov_id);
                     }
-
-                    foreach (string mov_name in films_id_name[mov_id])
-                    {
-                        persons[chel_id].movies_id.Add(mov_name);
-                    }
+                    persons[chel_id].movies_id.Add(mov_id);
                 }
             }
-            Console.WriteLine("make people 2 done");
+            Console.WriteLine("Make people 2/2 done.");
 
             return persons;
         }
