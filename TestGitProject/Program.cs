@@ -21,48 +21,57 @@ namespace TestGitProject
         static Dictionary<string, Movie> films = new Dictionary<string, Movie>();  // название: фильм
         static Dictionary<string, List<Movie>> people = new Dictionary<string, List<Movie>>();  // имя учатсника: фильмы
         static Dictionary<string, List<Movie>> tags_dict = new Dictionary<string, List<Movie>>();  // тэг: фильмы
+        static string dataset_path = @"C:\Универ\ml-latest\";
 
         static void Main(string[] args)
         {
             Dictionary<string, List<string>> id_name = new Dictionary<string, List<string>>();  // id фильма: название фильма
 
-            string dataset_path = @"C:\Универ\ml-latest\";
-
             // наполнение словарей films и id_name
-            string[] MovieCodes_IMDB = File.ReadAllLines(dataset_path + "MovieCodes_IMDB.tsv")[1..];
-            foreach (var line in MovieCodes_IMDB.AsParallel())
+            using (StreamReader reader = new StreamReader(dataset_path + "MovieCodes_IMDB.tsv"))
             {
-                string[] elements = line.Split('\t');
-                string film_id = elements[0].Trim(), title = elements[2].Trim(), region = elements[3].Trim(), language = elements[4].Trim();
-                if (region == "RU" || region == "US" || language == "RU" || language == "US")
+                reader.ReadLine();
+                while (!reader.EndOfStream)
                 {
-                    if (!films.ContainsKey(title))
+                    string line = reader.ReadLine();
+                    int zero = line.IndexOf("\t"), one = line.IndexOf("\t", zero + 1), 
+                        two = line.IndexOf("\t", one + 1), three = line.IndexOf("\t", two + 1), four = line.IndexOf("\t", three + 1);
+                    string film_id = line[0..zero], title = line[(one+1)..two], 
+                        region = line[(two + 1)..three], language = line[(three + 1)..four];
+                    
+                    if (region == "RU" || region == "US" || language == "RU" || language == "US")
                     {
-                        films[title] = new Movie(title, film_id);
+                        if (!films.ContainsKey(title))
+                        {
+                            films[title] = new Movie(title, film_id);
+                        }
+                        if (!id_name.ContainsKey(film_id))
+                            id_name[film_id] = new List<string>();
+                        id_name[film_id].Add(title);
                     }
-                    if (!id_name.ContainsKey(film_id))
-                        id_name[film_id] = new List<string>();
-                    id_name[film_id].Add(title);
                 }
             }
-            MovieCodes_IMDB = null;
             Console.WriteLine("The initial review of the films is done.");
 
 
             // добавление рейтинга во все фильмы
-            string[] Ratings_IMDB = File.ReadAllLines(dataset_path + "Ratings_IMDB.tsv")[1..];
-            foreach (var line in Ratings_IMDB.AsParallel())
+            using (StreamReader reader = new StreamReader(dataset_path + "Ratings_IMDB.tsv"))
             {
-                string[] elements = line.Split('\t');
-                string film_id = elements[0].Trim(), rating = elements[1].Trim();
-                if (id_name.ContainsKey(film_id))
+                reader.ReadLine();
+                while (!reader.EndOfStream)
                 {
-                    foreach (var name in id_name[film_id])
-                        films[name].rating = rating;
+                    string line = reader.ReadLine();
+                    int one = line.IndexOf("\t"), two = line.IndexOf("\t", one + 1);
+                    string film_id = line[0..one], rating = line[(one+1)..two];
+                    if (id_name.ContainsKey(film_id))
+                    {
+                        foreach (var name in id_name[film_id])
+                            films[name].rating = rating;
+                    }
                 }
             }
-            Ratings_IMDB = null;
             Console.WriteLine("Rating done.");
+
 
             Dictionary<string, List<string>> result_tags = make_tags(id_name);
             foreach (var film_name in result_tags.Keys.AsParallel())
@@ -194,7 +203,6 @@ namespace TestGitProject
             Console.WriteLine("Start make tags.");
             Dictionary<string, List<string>> result = new Dictionary<string, List<string>>(); // film name: [all tags]
             Dictionary<string, string> MovLens_IMDB = new Dictionary<string, string>();
-            string dataset_path = @"C:\Универ\ml-latest\";
             Dictionary<string, string> tag_dict = new Dictionary<string, string>(); // tag_id: tag
 
 
@@ -203,8 +211,9 @@ namespace TestGitProject
                 reader.ReadLine();
                 while (!reader.EndOfStream)
                 {
-                    string[] elements = reader.ReadLine().Split(",");
-                    MovLens_IMDB[elements[0]] = "tt" + elements[1];
+                    string line = reader.ReadLine();
+                    int one = line.IndexOf(",");
+                    MovLens_IMDB[line[0..one]] = "tt" + line[(one+1)..(line.IndexOf(",", one + 1))];
                 }
             }
             Console.WriteLine("Make tags done 1/3.");
@@ -215,8 +224,9 @@ namespace TestGitProject
                 reader.ReadLine();
                 while (!reader.EndOfStream)
                 {
-                    string[] elements = reader.ReadLine().Split(",");
-                    tag_dict[elements[0].Trim()] = elements[1].Trim();
+                    string line = reader.ReadLine();
+                    int zero = line.IndexOf(",");
+                    tag_dict[line[0..zero]] = line[(zero + 1)..];
                 }
             }
             Console.WriteLine("Make tags done 2/3.");
@@ -226,8 +236,10 @@ namespace TestGitProject
                 reader.ReadLine();
                 while (!reader.EndOfStream)
                 {
-                    string[] elements = reader.ReadLine().Split(",");
-                    string tagid = elements[1].Trim(), rel = elements[2].Trim(), MovLens_id = elements[0].Trim();
+                    string line = reader.ReadLine();
+                    int zero = line.IndexOf(","), one = line.IndexOf(",", zero + 1);
+                    string tagid = line[(zero+1)..one], rel = line[(one + 1)..], MovLens_id = line[0..zero];
+                    
                     string IMDB_id = MovLens_IMDB[MovLens_id];
                     int relevants;
                     if (rel.Length < 4)
@@ -254,7 +266,6 @@ namespace TestGitProject
         static Dictionary<string, Person> make_people(Dictionary<string, List<string>> films_id_name)
         {
             Console.WriteLine("Start make people.");
-            string dataset_path = @"C:\Универ\ml-latest\";
             Dictionary<string, Person> persons = new Dictionary<string, Person>();  // id: Person
 
             using (StreamReader reader = new StreamReader(dataset_path + "ActorsDirectorsNames_IMDB.txt"))
@@ -262,16 +273,12 @@ namespace TestGitProject
                 reader.ReadLine();
                 while (!reader.EndOfStream)
                 {
-                    string[] elems = reader.ReadLine().Split("\t");
-                    string per_id = elems[0].Trim(), per_name = elems[1].Trim();
-                    string[] professions = elems[4].Trim().Split(","), target_profs = new string[3] { "director", "actor", "actress" };
-                    bool flag = false;
-                    foreach(var prof in professions)
-                    {
-                        if (target_profs.Contains(prof))
-                            flag = true;
-                    }
-                    if (flag)
+                    string line = reader.ReadLine();
+                    int zero = line.IndexOf("\t"), one = line.IndexOf("\t", zero + 1), two = line.IndexOf("\t", one + 1),
+                        three = line.IndexOf("\t", two + 1), four = line.IndexOf("\t", three + 1);
+                    string per_id = line[0..zero], per_name = line[(zero + 1)..one], professions = line[(three + 1)..four];
+                    
+                    if (professions.Contains("director") || professions.Contains("actor") || professions.Contains("actress"))
                         persons[per_id] = new Person(per_name, per_id);
                 }
             }
@@ -283,8 +290,10 @@ namespace TestGitProject
                 reader.ReadLine();
                 while (!reader.EndOfStream)
                 {
-                    string[] elems = reader.ReadLine().Split("\t");
-                    string mov_id = elems[0].Trim(), chel_id = elems[2].Trim(), categ = elems[3].Trim();
+                    string line = reader.ReadLine();
+                    int zero = line.IndexOf("\t"), one = line.IndexOf("\t", zero + 1), two = line.IndexOf("\t", one + 1),
+                        three = line.IndexOf("\t", two + 1);
+                    string mov_id = line[..zero], chel_id = line[(one + 1)..two], categ = line[(two + 1)..three];
                     if (!persons.ContainsKey(chel_id) || !films_id_name.ContainsKey(mov_id))
                         continue;
                     if (categ == "director")
