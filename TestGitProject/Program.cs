@@ -22,8 +22,6 @@ namespace TestGitProject
         static void Main(string[] args)
         {
             Dictionary<string, List<string>> id_name = new Dictionary<string, List<string>>();  // id фильма: название фильма
-            download_info_to_bd();
-            Console.WriteLine("download_info_to_bd done");
             // наполнение словарей films и id_name
             using (StreamReader reader = new StreamReader(dataset_path + "MovieCodes_IMDB.tsv"))
             {
