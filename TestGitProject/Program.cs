@@ -1,10 +1,18 @@
 ﻿using System;
+using System.Net.Http;
+using System.Net;
+using HtmlAgilityPack;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using Dapper;
-using Microsoft.Data.Sqlite;
-using System.Data.SqlClient;
+using System.Text;
+using System.Xml;
+using System.Xml.XPath;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Reflection;
 
 
 namespace TestGitProject
@@ -16,12 +24,10 @@ namespace TestGitProject
         static Dictionary<string, List<Movie>> tags_dict = new Dictionary<string, List<Movie>>();  // тэг: фильмы
         static string dataset_path = @"C:\Универ\ml-latest\";
 
-        static Dictionary<string, Person> persons_for_async = new Dictionary<string, Person>();
-        static Dictionary<string, List<string>> tags_async_result = new Dictionary<string, List<string>>();
-
         static void Main(string[] args)
         {
             Dictionary<string, List<string>> id_name = new Dictionary<string, List<string>>();  // id фильма: название фильма
+
             // наполнение словарей films и id_name
             using (StreamReader reader = new StreamReader(dataset_path + "MovieCodes_IMDB.tsv"))
             {
@@ -29,11 +35,12 @@ namespace TestGitProject
                 while (!reader.EndOfStream)
                 {
                     string line = reader.ReadLine();
-                    int zero = line.IndexOf("\t"), one = line.IndexOf("\t", zero + 1), 
+                    int zero = line.IndexOf("\t"), one = line.IndexOf("\t", zero + 1),
                         two = line.IndexOf("\t", one + 1), three = line.IndexOf("\t", two + 1), four = line.IndexOf("\t", three + 1);
-                    string film_id = line[0..zero], title = line[(one+1)..two], 
+                    string film_id = line[0..zero], title = line[(one + 1)..two],
                         region = line[(two + 1)..three], language = line[(three + 1)..four];
-                    
+
+                    ReadOnlySpan<char> region1 = line.AsSpan((two + 1), (three - two));
                     if (region == "RU" || region == "US" || language == "RU" || language == "US")
                     {
                         if (!films.ContainsKey(title))
@@ -57,7 +64,7 @@ namespace TestGitProject
                 {
                     string line = reader.ReadLine();
                     int one = line.IndexOf("\t"), two = line.IndexOf("\t", one + 1);
-                    string film_id = line[0..one], rating = line[(one+1)..two];
+                    string film_id = line[0..one], rating = line[(one + 1)..two];
                     if (id_name.ContainsKey(film_id))
                     {
                         foreach (var name in id_name[film_id])
@@ -96,11 +103,11 @@ namespace TestGitProject
             }
             Console.WriteLine("Make people done");
 
-            // финальные приготовления
             // наполнение второго словаря
             foreach (var per in result_people.Values)
             {
-                people[per.name] = new List<Movie>();
+                if (!people.ContainsKey(per.name))
+                    people[per.name] = new List<Movie>();
                 foreach (var mov_id in per.movies_id)
                 {
                     if (!id_name.ContainsKey(mov_id))
@@ -148,7 +155,8 @@ namespace TestGitProject
                         if (!people.ContainsKey(person_name))
                         {
                             Console.WriteLine("Указанный человек не найден");
-                        } else
+                        }
+                        else
                         {
                             int num = 1;
                             Console.WriteLine($"Человек с именем {person_name} участвовал в следующих проектах:");
@@ -182,21 +190,6 @@ namespace TestGitProject
             }
         }
 
-        static bool download_info_to_bd()
-        {
-            // Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename="C:\C# Projects from VS\TestGitProject\TestGitProject\movies_info.mdf";Integrated Security=True
-            bool flag_done = false;
-            
-            string connectionString = @"C:\C# Projects from VS\TestGitProject\TestGitProject\movies_info.mdf";
-            using (var connection = new SqliteConnection(connectionString))
-            {
-                
-            }
-            Console.WriteLine("done");
-
-            return flag_done;
-        }
-
         static string print_iter(IEnumerable<string> iterable)
         {
             int i = 0;
@@ -223,7 +216,7 @@ namespace TestGitProject
                 {
                     string line = reader.ReadLine();
                     int one = line.IndexOf(",");
-                    MovLens_IMDB[line[0..one]] = "tt" + line[(one+1)..(line.IndexOf(",", one + 1))];
+                    MovLens_IMDB[line[0..one]] = "tt" + line[(one + 1)..(line.IndexOf(",", one + 1))];
                 }
             }
             Console.WriteLine("Make tags done 1/3.");
@@ -248,8 +241,8 @@ namespace TestGitProject
                 {
                     string line = reader.ReadLine();
                     int zero = line.IndexOf(","), one = line.IndexOf(",", zero + 1);
-                    string tagid = line[(zero+1)..one], rel = line[(one + 1)..], MovLens_id = line[0..zero];
-                    
+                    string tagid = line[(zero + 1)..one], rel = line[(one + 1)..], MovLens_id = line[0..zero];
+
                     string IMDB_id = MovLens_IMDB[MovLens_id];
                     int relevants;
                     if (rel.Length < 4)
@@ -265,7 +258,7 @@ namespace TestGitProject
                                 result[film_name] = new List<string>();
                             result[film_name].Add(tag_dict[tagid]);
                         }
-                        
+
                     }
                 }
             }
@@ -284,8 +277,8 @@ namespace TestGitProject
                 while (!reader.EndOfStream)
                 {
                     string line = reader.ReadLine();
-                    int zero = line.IndexOf('\t'), one = line.IndexOf('\t', zero + 1), two = line.IndexOf('\t', one + 1),
-                        three = line.IndexOf('\t', two + 1), four = line.IndexOf('\t', three + 1);
+                    int zero = line.IndexOf("\t"), one = line.IndexOf("\t", zero + 1), two = line.IndexOf("\t", one + 1),
+                        three = line.IndexOf("\t", two + 1), four = line.IndexOf("\t", three + 1);
                     string per_id = line[0..zero], per_name = line[(zero + 1)..one], professions = line[(three + 1)..four];
 
                     if (professions.Contains("director") || professions.Contains("actor") || professions.Contains("actress"))
@@ -301,8 +294,8 @@ namespace TestGitProject
                 while (!reader.EndOfStream)
                 {
                     string line = reader.ReadLine();
-                    int zero = line.IndexOf('\t'), one = line.IndexOf('\t', zero + 1), two = line.IndexOf('\t', one + 1),
-                        three = line.IndexOf('\t', two + 1);
+                    int zero = line.IndexOf("\t"), one = line.IndexOf("\t", zero + 1), two = line.IndexOf("\t", one + 1),
+                        three = line.IndexOf("\t", two + 1);
                     string mov_id = line[..zero], chel_id = line[(one + 1)..two], categ = line[(two + 1)..three];
                     if (!persons.ContainsKey(chel_id) || !films_id_name.ContainsKey(mov_id))
                         continue;
