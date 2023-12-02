@@ -8,44 +8,50 @@ namespace TestGitProject
     {
         static void Main(string[] args)
         {
-            int n = Convert.ToInt32(Console.ReadLine());
-            List<string> data = Console.ReadLine().Split().ToList<string>();
-            int? minim = null, maxim = null;
-            foreach (var elem in  data)
+            string[] data = Console.ReadLine().Split();
+            int n = Convert.ToInt32(data[0]), k = Convert.ToInt32(data[1]);
+            
+            int answer = 0, cur_sum = 0, zero_cnt = 0, index = 0;
+            Dictionary<int, List<int>> prefics = new Dictionary<int, List<int>>(); // кол-во нулей: сумма
+
+            foreach (var elem in Console.ReadLine().Split())
             {
-                if (minim == null)
+                int number = Convert.ToInt32(elem);
+                if (number == 0)
                 {
-                    minim = Convert.ToInt32(elem);
-                    maxim = Convert.ToInt32(elem);
+                    zero_cnt += 1;
+                    prefics[zero_cnt] = new List<int>();
                 }
+                cur_sum += number;
+                if (cur_sum <= k && zero_cnt < 2)
+                    answer += (index + 1);
                 else
                 {
-                    int number = Convert.ToInt32(elem);
-                    if (number < minim)
+                    int key1 = zero_cnt - 1, key2 = zero_cnt;
+                    if (prefics.ContainsKey(key1))
                     {
-                        minim = number;
+                        foreach (var pre_sum in prefics[key1])
+                        {
+                            if (cur_sum - pre_sum <= k)
+                                answer += 1;
+                        }
                     }
-                    if (number > maxim)
-                    {
-                        maxim = number;
+                    if (prefics.ContainsKey(key2)) 
+                    { 
+                        foreach (var pre_sum in prefics[key2])
+                        {
+                            if (cur_sum - pre_sum <= k)
+                                answer += 1;
+                        }
                     }
                 }
-            }
 
-            int i = n - 1, j = 0;
-            while (i > 0)
-            {
-                if (Convert.ToInt32(data[i]) == maxim)
-                    break;
-                i -= 1;
+                if (!prefics.ContainsKey(zero_cnt))
+                    prefics[zero_cnt] = new List<int>();
+                prefics[zero_cnt].Add(cur_sum);
+                index += 1;
             }
-            while (j < n)
-            {
-                if (Convert.ToInt32(data[j]) == minim)
-                    break;
-                j += 1;
-            }
-            Console.WriteLine($"{i + 1} {j + 1}");
+            Console.Write(answer);
         }
     }
 }
