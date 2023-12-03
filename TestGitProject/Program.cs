@@ -10,44 +10,63 @@ namespace TestGitProject
         {
             string[] data = Console.ReadLine().Split();
             int n = Convert.ToInt32(data[0]), m = Convert.ToInt32(data[1]);
-            int t = Convert.ToInt32(Console.ReadLine());
-            Dictionary<int, Tuple<int, int>> lines = new Dictionary<int, Tuple<int, int>>();
-            Dictionary<int, Tuple<int, int>> columns = new Dictionary<int, Tuple<int, int>>();
+            string line = Console.ReadLine();
 
-            for (int iter = 0; iter < t; iter += 1)
+            if (m > 0)
             {
-                data = Console.ReadLine().Split();
-                int color = Convert.ToInt32(data[2]);
-                lines[Convert.ToInt32(data[0]) - 1] = Tuple.Create(color, iter);
-                columns[Convert.ToInt32(data[1]) - 1] = Tuple.Create(color, iter);
-            }
-
-            for (int i = 0; i < n; i += 1)  // номер строки
+                List<int> answer = new List<int>();
+                answer.Add(Func(n, m, line, 'R'));
+                answer.Add(Func(n, m, line, 'G'));
+                answer.Add(Func(n, m, line, 'B'));
+                Console.WriteLine(answer.Max());
+            } else
             {
-                for (int j = 0; j < m; j += 1)  // номер столбца
+                int cur_len = 0, answer = -1, i = 0;
+                while (i < n - 1)
                 {
-                    if (!lines.ContainsKey(i) && !columns.ContainsKey(j))
-                        Console.Write("0 ");
-                    if (lines.ContainsKey(i) && columns.ContainsKey(j))
+                    cur_len += 1;
+                    if (line[i] != line[i + 1])
                     {
-                        Tuple<int, int> lin = lines[i];
-                        Tuple<int, int> col = columns[j];
-                        if (lin.Item2 > col.Item2)
-                            Console.Write($"{lin.Item1} ");
-                        else
-                            Console.Write($"{col.Item1} ");
+                        if (cur_len > answer)
+                            answer = cur_len;
+                        cur_len = 0;
                     }
-                    if (lines.ContainsKey(i) && !columns.ContainsKey(j))
-                    {
-                        Console.Write($"{lines[i].Item1} ");
-                    }
-                    if (!lines.ContainsKey(i) && columns.ContainsKey(j))
-                    {
-                        Console.Write($"{columns[j].Item1} ");
-                    }
+                    i += 1;
                 }
-                Console.WriteLine();
+                if (line[n - 2] == line[n - 1])
+                {
+                    cur_len += 1;
+                }
+                if (cur_len > answer)
+                    answer = cur_len;
+                Console.WriteLine(answer);
             }
+        }
+
+        static int Func(int n, int m, string line, char letter)
+        {
+            List<int> changes = new List<int>();
+            int i = 0, start = 0, answer = -1, cur_len = -1;
+            while (i < n)
+            {
+                if (line[i] != letter)
+                {
+                    if (changes.Count == m)
+                    {
+                        cur_len = i - start;
+                        if (cur_len > answer)
+                            answer = cur_len;
+                        start = changes[0] + 1;
+                        changes.RemoveAt(0);
+                    }
+                    changes.Add(i);
+                }
+                i += 1;
+            }
+            cur_len = n - start;
+            if (cur_len > answer)
+                answer = cur_len;
+            return answer;
         }
     }
 }
