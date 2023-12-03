@@ -10,44 +10,53 @@ namespace TestGitProject
         {
             int n = Convert.ToInt32(Console.ReadLine());
             string[] data = Console.ReadLine().Split();
-            int sum_left = 0, sum_right = Convert.ToInt32(data[n - 1]);
-            int index = 0;  // индекс, с которого начинается правая часть
-            bool flag = false;
-            for (int i = 0; i < n - 1; i += 1)
-                sum_left += Convert.ToInt32(data[i]);
-            index = n - 1;
 
             if (n > 2)
             {
-                while (index > 0)
+                // индекс, до которого идёт префикс: префиксная сумма
+                Dictionary<int, int> dict = new Dictionary<int, int>();
+                int[] numbers = new int[n];
+                int summa = 0;
+                for (int i = 0; i < n - 1; i += 1)
                 {
-                    if (sum_left == sum_right)
+                    int num = Convert.ToInt32(data[i]);
+                    summa += num;
+                    numbers[i] = num;
+                    dict[i] = summa;
+                }
+                numbers[n - 1] = Convert.ToInt32(data[n - 1]);
+                
+                int ans = -1;
+                summa = numbers[n - 1];
+                for (int i = n - 2; i >= 0; i -= 1)
+                {
+                    if (summa == dict[i])
                     {
-                        flag = true;
+                        ans = i;
                         break;
                     }
-                    index -= 1;
-                    int num = Convert.ToInt32(data[index]);
-                    sum_left -= num;
-                    sum_right += num;
+                    summa += numbers[i];
                 }
-                if (!flag)
-                    Console.WriteLine(-1);
+                
+                if (ans == -1)
+                    Console.WriteLine(ans);
                 else
                 {
                     for (int i = 0; i < n; i += 1)
                     {
-                        Console.Write(data[i]);
-                        if (i + 1 == index)
-                            Console.Write("=");
+                        if (i == ans)
+                            Console.Write($"{data[i]}=");
                         else
                         {
-                            if (i + 1 != n)
-                                Console.Write("+");
+                            if (i == n - 1)
+                                Console.Write(data[i]);
+                            else
+                                Console.Write($"{data[i]}+");
                         }
                     }
                 }
-            } else
+            } 
+            else
             {
                 if (data[0] == data[1])
                     Console.WriteLine($"{data[0]}={data[0]}");
