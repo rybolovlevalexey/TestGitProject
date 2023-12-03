@@ -8,60 +8,45 @@ namespace TestGitProject
     {
         static void Main(string[] args)
         {
-            int n = Convert.ToInt32(Console.ReadLine());
             string[] data = Console.ReadLine().Split();
+            int n = Convert.ToInt32(data[0]), m = Convert.ToInt32(data[1]);
+            int t = Convert.ToInt32(Console.ReadLine());
+            Dictionary<int, Tuple<int, int>> lines = new Dictionary<int, Tuple<int, int>>();
+            Dictionary<int, Tuple<int, int>> columns = new Dictionary<int, Tuple<int, int>>();
 
-            if (n > 2)
+            for (int iter = 0; iter < t; iter += 1)
             {
-                // индекс, до которого идёт префикс: префиксная сумма
-                Dictionary<int, int> dict = new Dictionary<int, int>();
-                int[] numbers = new int[n];
-                int summa = 0;
-                for (int i = 0; i < n - 1; i += 1)
+                data = Console.ReadLine().Split();
+                int color = Convert.ToInt32(data[2]);
+                lines[Convert.ToInt32(data[0]) - 1] = Tuple.Create(color, iter);
+                columns[Convert.ToInt32(data[1]) - 1] = Tuple.Create(color, iter);
+            }
+
+            for (int i = 0; i < n; i += 1)  // номер строки
+            {
+                for (int j = 0; j < m; j += 1)  // номер столбца
                 {
-                    int num = Convert.ToInt32(data[i]);
-                    summa += num;
-                    numbers[i] = num;
-                    dict[i] = summa;
-                }
-                numbers[n - 1] = Convert.ToInt32(data[n - 1]);
-                
-                int ans = -1;
-                summa = numbers[n - 1];
-                for (int i = n - 2; i >= 0; i -= 1)
-                {
-                    if (summa == dict[i])
+                    if (!lines.ContainsKey(i) && !columns.ContainsKey(j))
+                        Console.Write("0 ");
+                    if (lines.ContainsKey(i) && columns.ContainsKey(j))
                     {
-                        ans = i;
-                        break;
-                    }
-                    summa += numbers[i];
-                }
-                
-                if (ans == -1)
-                    Console.WriteLine(ans);
-                else
-                {
-                    for (int i = 0; i < n; i += 1)
-                    {
-                        if (i == ans)
-                            Console.Write($"{data[i]}=");
+                        Tuple<int, int> lin = lines[i];
+                        Tuple<int, int> col = columns[j];
+                        if (lin.Item2 > col.Item2)
+                            Console.Write($"{lin.Item1} ");
                         else
-                        {
-                            if (i == n - 1)
-                                Console.Write(data[i]);
-                            else
-                                Console.Write($"{data[i]}+");
-                        }
+                            Console.Write($"{col.Item1} ");
+                    }
+                    if (lines.ContainsKey(i) && !columns.ContainsKey(j))
+                    {
+                        Console.Write($"{lines[i].Item1} ");
+                    }
+                    if (!lines.ContainsKey(i) && columns.ContainsKey(j))
+                    {
+                        Console.Write($"{columns[j].Item1} ");
                     }
                 }
-            } 
-            else
-            {
-                if (data[0] == data[1])
-                    Console.WriteLine($"{data[0]}={data[0]}");
-                else
-                    Console.WriteLine(-1);
+                Console.WriteLine();
             }
         }
     }
